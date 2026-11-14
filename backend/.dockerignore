@@ -1,0 +1,10 @@
+target/
+.env
+*.log
+.mvn/
+mvnw
+mvnw.cmd
+.git
+.gitignore
+.DS_Store
+Thumbs.db

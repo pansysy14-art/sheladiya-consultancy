@@ -1,0 +1,26 @@
+#!/bin/sh
+# ----------------------------------------------------------------------------
+# Maven Wrapper for Sheladiya Consultancy Backend
+# ----------------------------------------------------------------------------
+PRG="$0"
+while [ -h "$PRG" ]; do
+  ls=`ls -ld "$PRG"`
+  link=`expr "$ls" : '.*-> \(.*\)$'`
+  if expr "$link" : '/.*' > /dev/null; then
+    PRG="$link"
+  else
+    PRG=`dirname "$PRG"`/"$link"
+  fi
+done
+SAVED="`pwd`"
+cd "`dirname \"$PRG\"`" >/dev/null
+APP_DIR="`pwd -P`"
+cd "$SAVED" >/dev/null
+
+if [ -z "$JAVA_HOME" ] ; then
+  JAVACMD="java"
+else
+  JAVACMD="$JAVA_HOME/bin/java"
+fi
+
+exec mvn "$@"
