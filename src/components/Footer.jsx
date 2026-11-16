@@ -46,6 +46,7 @@ export const Footer = ({ onOpenDisclaimer }) => {
 
   const practiceVerticals = [
     'Civil & Commercial Disputes Advisory',
+    'Criminal Defense & Bail Matters',
     'Corporate Board Governance & MCA',
     'Commercial Contract Redlining & Architecture',
     '30-Year Property Title Search Due Diligence',
@@ -71,7 +72,7 @@ export const Footer = ({ onOpenDisclaimer }) => {
             <SCLogo size="lg" showTagline={true} />
             
             <p className="text-xs text-slate-300 leading-relaxed pt-2 font-light">
-              Sheladiya Consultancy is a multidisciplinary legal and corporate consultancy providing structured counsel across civil disputes, commercial arbitration, enterprise compliance, contractual drafting, and real estate due diligence.
+              Sheladiya Consultancy is a multidisciplinary legal and corporate consultancy providing structured counsel across civil disputes, criminal defense & bail matters, commercial arbitration, enterprise compliance, contractual drafting, and real estate due diligence.
             </p>
 
             {/* Official Tagline Badge */}

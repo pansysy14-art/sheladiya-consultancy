@@ -135,7 +135,7 @@ export const Hero = ({ onOpenConsultation }) => {
             transition={{ duration: 0.8, delay: 0.35 }}
             className="text-base sm:text-lg text-slate-300 font-sans max-w-3xl leading-relaxed font-light mb-10"
           >
-            A multidisciplinary legal and corporate consultancy providing structured advisory across civil disputes, commercial arbitration, corporate compliance, business documentation, and real estate due diligence.
+            A multidisciplinary legal and corporate consultancy providing structured advisory across civil disputes, criminal defense & bail matters, commercial arbitration, corporate compliance, business documentation, and real estate due diligence.
           </motion.p>
 
           {/* Action CTAs */}

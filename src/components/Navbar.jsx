@@ -19,7 +19,11 @@ export const Navbar = ({ onOpenConsultation, onOpenDisclaimer }) => {
 
   const navLinks = [
     { label: 'About', href: '#about' },
-    { label: 'Legal Services', href: '#legal-services' },
+    { 
+      label: 'Legal Services', 
+      href: '#legal-services',
+      subItems: ['Civil Disputes', 'Criminal & Bail', 'Commercial Arbitration', 'Statutory Notices']
+    },
     { label: 'Corporate', href: '#corporate' },
     { label: 'Documentation', href: '#documentation' },
     { label: 'Property', href: '#property' },
@@ -197,19 +201,29 @@ export const Navbar = ({ onOpenConsultation, onOpenDisclaimer }) => {
             {navLinks.map((link) => {
               const isActive = activeSection === link.href.substring(1);
               return (
-                <a
-                  key={link.href}
-                  href={link.href}
-                  onClick={(e) => handleNavClick(e, link.href)}
-                  className={`px-4 py-3 rounded-xl text-sm font-medium transition-colors flex items-center justify-between ${
-                    isActive
-                      ? 'bg-navy-800/90 text-gold-300 border-l-4 border-gold-400'
-                      : 'text-slate-300 hover:bg-navy-900 hover:text-gold-300'
-                  }`}
-                >
-                  <span>{link.label}</span>
-                  <ChevronRight className="w-4 h-4 text-slate-500" />
-                </a>
+                <div key={link.href} className="flex flex-col">
+                  <a
+                    href={link.href}
+                    onClick={(e) => handleNavClick(e, link.href)}
+                    className={`px-4 py-3 rounded-xl text-sm font-medium transition-colors flex items-center justify-between ${
+                      isActive
+                        ? 'bg-navy-800/90 text-gold-300 border-l-4 border-gold-400'
+                        : 'text-slate-300 hover:bg-navy-900 hover:text-gold-300'
+                    }`}
+                  >
+                    <span>{link.label}</span>
+                    <ChevronRight className="w-4 h-4 text-slate-500" />
+                  </a>
+                  {link.subItems && (
+                    <div className="pl-4 pr-2 py-1.5 flex flex-wrap gap-1.5 mb-1">
+                      {link.subItems.map((sub, sIdx) => (
+                        <span key={sIdx} className="text-[10px] font-medium px-2 py-0.5 rounded bg-navy-900 border border-gold-400/20 text-slate-300">
+                          {sub}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
               );
             })}
 

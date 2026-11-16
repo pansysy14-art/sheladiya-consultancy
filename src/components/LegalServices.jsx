@@ -9,7 +9,8 @@ import {
   ArrowRight,
   CheckCircle2,
   AlertTriangle,
-  Briefcase
+  Briefcase,
+  Shield
 } from 'lucide-react';
 
 export const LegalServices = ({ onOpenConsultation }) => {
@@ -27,6 +28,18 @@ export const LegalServices = ({ onOpenConsultation }) => {
         'Negotiable instruments matters (Sec. 138 NI Act)'
       ],
       framework: 'Code of Civil Procedure, Contract Act, NI Act'
+    },
+    {
+      id: 'criminal-bail',
+      title: 'Criminal & Bail Matters',
+      icon: Shield,
+      summary: 'Strategic legal counsel for criminal proceedings, anticipatory and regular bail applications, and trial evaluation.',
+      details: [
+        'Regular bail, interim bail, and anticipatory bail applications',
+        'Criminal trial defense, revision applications, and appellate briefs',
+        'Quashing petitions and statutory summons evaluation'
+      ],
+      framework: 'Bharatiya Nagarik Suraksha Sanhita (BNSS), CrPC, BNS / IPC'
     },
     {
       id: 'corporate-litigation',
