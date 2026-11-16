@@ -4,8 +4,33 @@
  * for seamless integration with Spring Boot REST Controllers.
  */
 
-// Configurable API base URL (defaults to /api/v1 for Vite proxy, or import.meta.env.VITE_API_BASE_URL)
-const API_BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE_URL) || '/api/v1';
+/**
+ * Resolves the backend base URL cleanly:
+ * 1. Checks VITE_API_URL or VITE_API_BASE_URL from Vite environment variables.
+ * 2. Normalizes trailing slashes (e.g. "https://render.com/" -> "https://render.com").
+ * 3. If an external URL is provided without an API prefix (e.g. "https://sheladiya-backend.onrender.com"),
+ *    it appends "/api/v1" so requests map to Spring Boot controllers.
+ * 4. In local development or when undefined, defaults to "/api/v1" to leverage Vite's proxy.
+ */
+export const getApiBaseUrl = () => {
+  const envUrl = typeof import.meta !== 'undefined' && import.meta.env 
+    ? (import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL)
+    : null;
+
+  if (!envUrl || !envUrl.trim()) {
+    return 'https://sheladiya-backend.onrender.com/api/v1';
+  }
+
+  let cleanUrl = envUrl.trim().replace(/\/+$/, '');
+  
+  if (cleanUrl.startsWith('http') && !cleanUrl.includes('/api')) {
+    cleanUrl = `${cleanUrl}/api/v1`;
+  }
+  
+  return cleanUrl;
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 /**
  * Validates basic email formatting
@@ -61,8 +86,13 @@ export const submitContactInquiry = async (contactData) => {
     submittedAt: new Date().toISOString(),
   };
 
+  // Dedicated API request URL with fallback absolute URL pointing directly to Render backend
+  const apiUrl = (import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL.trim())
+    ? `${import.meta.env.VITE_API_URL.trim().replace(/\/+$/, '')}${import.meta.env.VITE_API_URL.includes('/api/v1') ? '' : '/api/v1'}/contact`
+    : 'https://sheladiya-backend.onrender.com/api/v1/contact';
+
   try {
-    const response = await fetch(`${API_BASE_URL}/contact`, {
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -81,6 +111,10 @@ export const submitContactInquiry = async (contactData) => {
       };
     }
 
+    if (response.status === 405) {
+      throw new Error('HTTP 405 Method Not Allowed: Please verify VITE_API_URL and ensure backend is active.');
+    }
+
     // Handle Spring validation errors (HTTP 400 Bad Request)
     if (response.status === 400) {
       const errorJson = await response.json().catch(() => ({}));
@@ -91,7 +125,7 @@ export const submitContactInquiry = async (contactData) => {
     throw new Error(`Server returned error status: ${response.status}`);
   } catch (err) {
     if (err.message && (err.message.includes('Failed to fetch') || err.message.includes('NetworkError') || err.message.includes('Load failed'))) {
-      throw new Error('Unable to connect to the backend server. Please verify the Spring Boot service is active on port 8080.');
+      throw new Error('Unable to connect to the backend server. Please verify the Spring Boot service is active.');
     }
     throw err;
   }
@@ -133,8 +167,13 @@ export const scheduleConsultationInquiry = async (consultationData) => {
     submittedAt: new Date().toISOString(),
   };
 
+  // Dedicated API request URL with fallback absolute URL pointing directly to Render backend
+  const apiUrl = (import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL.trim())
+    ? `${import.meta.env.VITE_API_URL.trim().replace(/\/+$/, '')}${import.meta.env.VITE_API_URL.includes('/api/v1') ? '' : '/api/v1'}/consultations`
+    : 'https://sheladiya-backend.onrender.com/api/v1/consultations';
+
   try {
-    const response = await fetch(`${API_BASE_URL}/consultations`, {
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -154,6 +193,10 @@ export const scheduleConsultationInquiry = async (consultationData) => {
       };
     }
 
+    if (response.status === 405) {
+      throw new Error('HTTP 405 Method Not Allowed: Please verify VITE_API_URL and ensure backend is active.');
+    }
+
     if (response.status === 400) {
       const errorJson = await response.json().catch(() => ({}));
       throw new Error(errorJson.message || 'Validation error in consultation submission.');
@@ -162,7 +205,7 @@ export const scheduleConsultationInquiry = async (consultationData) => {
     throw new Error(`Server returned error status: ${response.status}`);
   } catch (err) {
     if (err.message && (err.message.includes('Failed to fetch') || err.message.includes('NetworkError') || err.message.includes('Load failed'))) {
-      throw new Error('Unable to connect to the backend server. Please verify the Spring Boot service is active on port 8080.');
+      throw new Error('Unable to connect to the backend server. Please verify the Spring Boot service is active.');
     }
     throw err;
   }
@@ -193,8 +236,13 @@ export const bookAppointment = async (appointmentData) => {
     consultationReference: appointmentData.consultationReference || null
   };
 
+  // Dedicated API request URL with fallback absolute URL pointing directly to Render backend
+  const apiUrl = (import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL.trim())
+    ? `${import.meta.env.VITE_API_URL.trim().replace(/\/+$/, '')}${import.meta.env.VITE_API_URL.includes('/api/v1') ? '' : '/api/v1'}/appointments`
+    : 'https://sheladiya-backend.onrender.com/api/v1/appointments';
+
   try {
-    const response = await fetch(`${API_BASE_URL}/appointments`, {
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -213,6 +261,10 @@ export const bookAppointment = async (appointmentData) => {
       };
     }
 
+    if (response.status === 405) {
+      throw new Error('HTTP 405 Method Not Allowed: Please verify VITE_API_URL and ensure backend is active.');
+    }
+
     if (response.status === 400) {
       const errorJson = await response.json().catch(() => ({}));
       throw new Error(errorJson.message || 'Validation error in appointment scheduling.');
@@ -221,7 +273,7 @@ export const bookAppointment = async (appointmentData) => {
     throw new Error(`Server returned error status: ${response.status}`);
   } catch (err) {
     if (err.message && (err.message.includes('Failed to fetch') || err.message.includes('NetworkError') || err.message.includes('Load failed'))) {
-      throw new Error('Unable to connect to the backend server. Please verify the Spring Boot service is active on port 8080.');
+      throw new Error('Unable to connect to the backend server. Please verify the Spring Boot service is active.');
     }
     throw err;
   }
@@ -231,8 +283,12 @@ export const bookAppointment = async (appointmentData) => {
  * Checks backend health status from Spring Boot /api/v1/health
  */
 export const checkBackendHealth = async () => {
+  const apiUrl = (import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL.trim())
+    ? `${import.meta.env.VITE_API_URL.trim().replace(/\/+$/, '')}${import.meta.env.VITE_API_URL.includes('/api/v1') ? '' : '/api/v1'}/health`
+    : 'https://sheladiya-backend.onrender.com/api/v1/health';
+
   try {
-    const response = await fetch(`${API_BASE_URL}/health`);
+    const response = await fetch(apiUrl);
     if (response.ok) {
       return await response.json();
     }

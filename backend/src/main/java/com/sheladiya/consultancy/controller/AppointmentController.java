@@ -15,8 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/v1")
-@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:3000"})
+@RequestMapping({"/api/v1", "/api", ""})
 public class AppointmentController {
 
     private final AppointmentService appointmentService;
@@ -27,8 +26,9 @@ public class AppointmentController {
 
     /**
      * Public endpoint to book or confirm a consultation appointment.
+     * Supports both /appointments and /appointment, with or without /api/v1 or /api prefix.
      */
-    @PostMapping("/appointments")
+    @PostMapping({"/appointments", "/appointment"})
     public ResponseEntity<ApiResponse<AppointmentResponseDto>> bookAppointment(
             @Valid @RequestBody AppointmentRequestDto requestDto) {
         AppointmentResponseDto booked = appointmentService.bookAppointment(requestDto);
@@ -36,6 +36,15 @@ public class AppointmentController {
                 ApiResponse.ok("Appointment successfully confirmed.", booked),
                 HttpStatus.CREATED
         );
+    }
+
+    /**
+     * Public informational GET endpoint to gracefully handle browser navigations
+     * or redirects without returning an HTTP 405 Method Not Allowed error.
+     */
+    @GetMapping({"/appointments", "/appointment"})
+    public ResponseEntity<ApiResponse<String>> appointmentInfo() {
+        return ResponseEntity.ok(ApiResponse.ok("Appointment booking service is active. Please submit bookings using HTTP POST."));
     }
 
     /**

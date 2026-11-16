@@ -48,16 +48,37 @@ public class SecurityConfig {
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-                        // Public client-facing endpoints
-                        .requestMatchers(HttpMethod.POST, "/api/v1/contact").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/consultations").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/appointments").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/appointments/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/health").permitAll()
+                        // CORS Preflight Requests: Unconditionally permit all OPTIONS requests
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                        // Public client-facing form submissions & inquiries (all routing prefixes)
+                        .requestMatchers(HttpMethod.POST, 
+                                "/api/v1/contact", "/api/contact", "/contact",
+                                "/api/v1/contacts", "/api/contacts", "/contacts",
+                                "/api/v1/consultations", "/api/consultations", "/consultations",
+                                "/api/v1/consultation", "/api/consultation", "/consultation",
+                                "/api/v1/appointments", "/api/appointments", "/appointments",
+                                "/api/v1/appointment", "/api/appointment", "/appointment"
+                        ).permitAll()
+
+                        // Public informational & status lookup endpoints
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/v1/contact", "/api/contact", "/contact",
+                                "/api/v1/contacts", "/api/contacts", "/contacts",
+                                "/api/v1/consultations", "/api/consultations", "/consultations",
+                                "/api/v1/consultation", "/api/consultation", "/consultation",
+                                "/api/v1/consultations/reference/**", "/api/consultations/reference/**", "/consultations/reference/**",
+                                "/api/v1/appointments/**", "/api/appointments/**", "/appointments/**",
+                                "/api/v1/health", "/api/health", "/health"
+                        ).permitAll()
+
+                        // Public authentication
+                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/login", "/api/auth/login", "/auth/login").permitAll()
+
                         // Protected management & admin endpoints
-                        .requestMatchers("/api/v1/admin/**").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers("/api/v1/auth/me").authenticated()
+                        .requestMatchers("/api/v1/admin/**", "/api/admin/**", "/admin/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers("/api/v1/auth/me", "/api/auth/me", "/auth/me").authenticated()
+                        
                         // Any other request requires authentication
                         .anyRequest().authenticated()
                 );

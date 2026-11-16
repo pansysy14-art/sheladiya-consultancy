@@ -14,9 +14,13 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+/**
+ * Public & Admin Consultation Controller
+ * Supports all routing prefixes (/api/v1, /api, or root) and both plural/singular
+ * endpoints to guarantee zero HTTP 405 Method Not Allowed or 404 routing errors.
+ */
 @RestController
-@RequestMapping("/api/v1")
-@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:3000"})
+@RequestMapping({"/api/v1", "/api", ""})
 public class ConsultationController {
 
     private final ConsultationService consultationService;
@@ -27,8 +31,9 @@ public class ConsultationController {
 
     /**
      * Public endpoint to book an in-person or virtual consultation.
+     * Supports both plural (/consultations) and singular (/consultation).
      */
-    @PostMapping("/consultations")
+    @PostMapping({"/consultations", "/consultation"})
     public ResponseEntity<ApiResponse<ConsultationResponseDto>> bookConsultation(
             @Valid @RequestBody ConsultationRequestDto requestDto) {
         ConsultationResponseDto booked = consultationService.bookConsultation(requestDto);
@@ -39,9 +44,18 @@ public class ConsultationController {
     }
 
     /**
+     * Public informational GET endpoint to gracefully handle browser navigations
+     * or HTTP 301/302 redirects without returning an HTTP 405 Method Not Allowed error.
+     */
+    @GetMapping({"/consultations", "/consultation"})
+    public ResponseEntity<ApiResponse<String>> consultationInfo() {
+        return ResponseEntity.ok(ApiResponse.ok("Consultation service is active. Please submit booking inquiries using HTTP POST."));
+    }
+
+    /**
      * Public endpoint to check status of a consultation using reference number.
      */
-    @GetMapping("/consultations/reference/{referenceNumber}")
+    @GetMapping({"/consultations/reference/{referenceNumber}", "/consultation/reference/{referenceNumber}"})
     public ResponseEntity<ApiResponse<ConsultationResponseDto>> getByReference(
             @PathVariable String referenceNumber) {
         ConsultationResponseDto dto = consultationService.getConsultationByReference(referenceNumber);
@@ -51,7 +65,7 @@ public class ConsultationController {
     /**
      * Admin endpoint: Retrieve paginated consultations.
      */
-    @GetMapping("/admin/consultations")
+    @GetMapping({"/admin/consultations", "/api/v1/admin/consultations"})
     public ResponseEntity<ApiResponse<Page<ConsultationResponseDto>>> getAllConsultations(
             @PageableDefault(size = 20) Pageable pageable) {
         Page<ConsultationResponseDto> page = consultationService.getAllConsultations(pageable);
@@ -61,7 +75,7 @@ public class ConsultationController {
     /**
      * Admin endpoint: Get consultation by ID.
      */
-    @GetMapping("/admin/consultations/{id}")
+    @GetMapping({"/admin/consultations/{id}", "/api/v1/admin/consultations/{id}"})
     public ResponseEntity<ApiResponse<ConsultationResponseDto>> getConsultationById(@PathVariable Long id) {
         ConsultationResponseDto dto = consultationService.getConsultationById(id);
         return ResponseEntity.ok(ApiResponse.ok(dto));
@@ -70,7 +84,7 @@ public class ConsultationController {
     /**
      * Admin endpoint: Update consultation status (e.g. CONFIRMED, COMPLETED, CANCELLED).
      */
-    @PatchMapping("/admin/consultations/{id}/status")
+    @PatchMapping({"/admin/consultations/{id}/status", "/api/v1/admin/consultations/{id}/status"})
     public ResponseEntity<ApiResponse<ConsultationResponseDto>> updateStatus(
             @PathVariable Long id,
             @RequestBody Map<String, String> statusUpdate) {

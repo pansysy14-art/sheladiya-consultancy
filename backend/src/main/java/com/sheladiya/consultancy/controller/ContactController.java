@@ -15,8 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/v1")
-@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:3000"})
+@RequestMapping({"/api/v1", "/api", ""})
 public class ContactController {
 
     private final ContactInquiryService contactService;
@@ -27,8 +26,9 @@ public class ContactController {
 
     /**
      * Public endpoint for submitting legal or corporate contact inquiries.
+     * Supports both /contact and /contacts, with or without /api/v1 or /api prefix.
      */
-    @PostMapping("/contact")
+    @PostMapping({"/contact", "/contacts"})
     public ResponseEntity<ApiResponse<ContactResponseDto>> submitContact(
             @Valid @RequestBody ContactRequestDto requestDto) {
         ContactResponseDto savedInquiry = contactService.submitContactInquiry(requestDto);
@@ -36,6 +36,15 @@ public class ContactController {
                 ApiResponse.ok("Thank you. Your inquiry has been received. Our team will review and contact you shortly.", savedInquiry),
                 HttpStatus.CREATED
         );
+    }
+
+    /**
+     * Public informational GET endpoint to gracefully handle browser navigations
+     * or redirects without returning an HTTP 405 Method Not Allowed error.
+     */
+    @GetMapping({"/contact", "/contacts"})
+    public ResponseEntity<ApiResponse<String>> contactInfo() {
+        return ResponseEntity.ok(ApiResponse.ok("Contact inquiry service is active. Please submit inquiries using HTTP POST."));
     }
 
     /**
