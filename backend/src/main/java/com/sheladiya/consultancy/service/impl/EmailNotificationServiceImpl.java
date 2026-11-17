@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -43,7 +44,8 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
     @Override
     public void sendContactInquiryNotification(ContactInquiry inquiry) {
         if (!isConfigured()) {
-            logger.info("[EmailNotification] Contact inquiry #{} saved in database. SMTP credentials not configured in backend/.env — email dispatch skipped.", inquiry.getId());
+            logger.warn("[EmailNotification] Contact inquiry #{} saved in database, but SMTP is not fully configured (mailEnabled={}, username='{}', passwordConfigured={}). Email dispatch skipped. Set MAIL_USERNAME and MAIL_PASSWORD in Render Environment variables.",
+                    inquiry.getId(), mailEnabled, (mailUsername != null && !mailUsername.isBlank() ? mailUsername : "EMPTY"), (mailPassword != null && !mailPassword.isBlank()));
             return;
         }
 
@@ -51,7 +53,8 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-            helper.setFrom(fromAddress, "SHELADIYA CONSULTANCY");
+            String senderAddress = (mailUsername != null && !mailUsername.isBlank()) ? mailUsername : fromAddress;
+            helper.setFrom(senderAddress, "SHELADIYA CONSULTANCY");
             helper.setTo(notificationTo);
             helper.setSubject("🔔 [New Client Inquiry] " + inquiry.getFullName() + " - " + inquiry.getPracticeArea());
 
@@ -132,17 +135,26 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
                 .replace("{{message}}", escapeHtml(inquiry.getMessage()).replace("\n", "<br>"));
 
             helper.setText(html, true);
-            mailSender.send(message);
-            logger.info("[EmailNotification] Contact inquiry notification sent successfully to {} for client: {}", notificationTo, inquiry.getFullName());
+
+            // Robust try-catch specifically around mailSender.send()
+            try {
+                mailSender.send(message);
+                logger.info("[EmailNotification] Contact inquiry notification sent successfully to {} for client: {}", notificationTo, inquiry.getFullName());
+            } catch (MailException mailEx) {
+                logger.error("[EmailNotification] SMTP MailException occurred while sending contact inquiry for client '{}': {}", 
+                        inquiry.getFullName(), mailEx.getMessage(), mailEx);
+            }
         } catch (Exception ex) {
-            logger.error("[EmailNotification] Failed to send contact inquiry notification for client '{}': {}", inquiry.getFullName(), ex.getMessage());
+            logger.error("[EmailNotification] Failed to prepare contact inquiry notification for client '{}': {}", 
+                    inquiry.getFullName(), ex.getMessage(), ex);
         }
     }
 
     @Override
     public void sendConsultationNotification(Consultation consultation) {
         if (!isConfigured()) {
-            logger.info("[EmailNotification] Consultation #{} ({}) saved in database. SMTP credentials not configured in backend/.env — email dispatch skipped.", consultation.getId(), consultation.getReferenceNumber());
+            logger.warn("[EmailNotification] Consultation #{} ({}) saved in database, but SMTP is not fully configured (mailEnabled={}, username='{}', passwordConfigured={}). Email dispatch skipped. Set MAIL_USERNAME and MAIL_PASSWORD in Render Environment variables.",
+                    consultation.getId(), consultation.getReferenceNumber(), mailEnabled, (mailUsername != null && !mailUsername.isBlank() ? mailUsername : "EMPTY"), (mailPassword != null && !mailPassword.isBlank()));
             return;
         }
 
@@ -150,7 +162,8 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-            helper.setFrom(fromAddress, "SHELADIYA CONSULTANCY");
+            String senderAddress = (mailUsername != null && !mailUsername.isBlank()) ? mailUsername : fromAddress;
+            helper.setFrom(senderAddress, "SHELADIYA CONSULTANCY");
             helper.setTo(notificationTo);
             helper.setSubject("⚖️ [Consultation Booking] Ref: " + consultation.getReferenceNumber() + " - " + consultation.getName());
 
@@ -246,10 +259,18 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
                 .replace("{{notes}}", notesHtml);
 
             helper.setText(html, true);
-            mailSender.send(message);
-            logger.info("[EmailNotification] Consultation booking notification sent successfully to {} for Ref: {}", notificationTo, consultation.getReferenceNumber());
+
+            // Robust try-catch specifically around mailSender.send()
+            try {
+                mailSender.send(message);
+                logger.info("[EmailNotification] Consultation booking notification sent successfully to {} for Ref: {}", notificationTo, consultation.getReferenceNumber());
+            } catch (MailException mailEx) {
+                logger.error("[EmailNotification] SMTP MailException occurred while sending consultation alert for Ref '{}': {}", 
+                        consultation.getReferenceNumber(), mailEx.getMessage(), mailEx);
+            }
         } catch (Exception ex) {
-            logger.error("[EmailNotification] Failed to send consultation alert for Ref '{}': {}", consultation.getReferenceNumber(), ex.getMessage());
+            logger.error("[EmailNotification] Failed to prepare consultation alert for Ref '{}': {}", 
+                    consultation.getReferenceNumber(), ex.getMessage(), ex);
         }
     }
 
